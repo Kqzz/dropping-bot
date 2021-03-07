@@ -126,10 +126,12 @@ client.on('message', async (message) => {
 				await getEmbedFromURL(threeCharURL, message.id)
 			);
 		default:
-			return new Discord.MessageEmbed()
-				.setTitle('Error')
-				.setColor(0xff0000)
-				.setDescription('Invalid command.');
+			return message.channel.send(
+				new Discord.MessageEmbed()
+					.setTitle('Error')
+					.setColor(0xff0000)
+					.setDescription('Invalid command.')
+			);
 	}
 });
 
