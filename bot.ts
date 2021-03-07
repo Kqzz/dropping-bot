@@ -3,6 +3,7 @@ const client = new Discord.Client();
 
 import { JSDOM } from 'jsdom';
 import { writeFileSync } from 'fs';
+import { PRIORITY_BELOW_NORMAL } from 'node:constants';
 
 let config = require('./config.json');
 
@@ -99,15 +100,18 @@ client.on('message', async (message) => {
 			break;
 		case 'prefix':
 			if (!message.member.roles.cache.has(config.mod_id))
-				return message.channel.send(
-					'You must be a moderator to use this command!'
-				);
+				return new Discord.MessageEmbed()
+					.setTitle('Error')
+					.setColor(0xff0000)
+					.setDescription('You must be a moderator to use this command!');
 			if (!args[0])
-				return message.channel.send('You must specify a prefix to change to!');
+				return new Discord.MessageEmbed()
+					.setTitle('Error')
+					.setColor(0xff0000)
+					.setDescription('You must specify a prefix to change to!');
 			config.prefix = args[0];
 			writeFileSync('config.json', JSON.stringify(config, null, 4));
 			return message.channel.send('Successfully changed prefix to ' + args[0]);
-			break;
 		case 'next':
 			const nextURL = `https://namemc.com/minecraft-names${
 				!isNaN(Number(args[0]))
@@ -115,14 +119,17 @@ client.on('message', async (message) => {
 					: ''
 			}`;
 			return message.channel.send(await getEmbedFromURL(nextURL, message.id));
-			break;
 		case '3char':
 			const threeCharURL =
 				'https://namemc.com/minecraft-names?sort=asc&length_op=eq&length=3&lang=&searches=0';
 			return message.channel.send(
 				await getEmbedFromURL(threeCharURL, message.id)
 			);
-			break;
+		default:
+			return new Discord.MessageEmbed()
+				.setTitle('Error')
+				.setColor(0xff0000)
+				.setDescription('Invalid command.');
 	}
 });
 
