@@ -11,10 +11,7 @@ client.on('ready', () => {
 	console.log('Dropping ready!');
 });
 
-async function getEmbedFromURL(
-	url: string,
-	messageSnowflake: Discord.Snowflake
-) {
+async function getEmbedFromURL(url: string, startTimestamp: number) {
 	const dom = await JSDOM.fromURL(url);
 	const nameElement = dom.window.document.querySelectorAll(
 		'body > main > div > div.col-md-6.col-lg-7.order-md-3 > div > div.card-body.p-0 > div:nth-child(1) > div.col.col-lg.order-lg-1.text-nowrap.text-ellipsis > a'
@@ -40,7 +37,8 @@ async function getEmbedFromURL(
 			)
 		)
 			.toLocaleString('en-US', {
-				hour12: false,
+				hour12: true,
+				timeZone: 'Europe/London',
 				timeZoneName: 'short'
 			})
 			.replace(',', '')
@@ -64,20 +62,7 @@ async function getEmbedFromURL(
 				value: data.droptime
 			}
 		])
-		.setFooter(
-			`Result generated in ${
-				Date.now() - snowflakeToUnixTimestamp(messageSnowflake)
-			}ms`
-		);
-}
-
-const discord_epoch = 1420070400000;
-
-function snowflakeToUnixTimestamp(snowflake: Discord.Snowflake): number {
-	const id = BigInt.asUintN(64, BigInt(snowflake));
-	const dateBits = Number(id >> 22n);
-
-	return dateBits + discord_epoch;
+		.setFooter(`Result generated in ${Date.now() - startTimestamp}ms`);
 }
 
 client.on('message', async (message) => {
@@ -85,6 +70,7 @@ client.on('message', async (message) => {
 	if (!message.content.startsWith(config.prefix)) return;
 	const command = message.content.split(' ')[0].substring(config.prefix.length);
 	const args = message.content.split(' ').splice(1);
+	const startTimestamp = Date.now();
 	switch (command) {
 		case 'help':
 			return message.channel.send(
@@ -118,12 +104,14 @@ client.on('message', async (message) => {
 					? `?sort=asc&length_op=&length=3&lang=&searches=${args[0]}`
 					: ''
 			}`;
-			return message.channel.send(await getEmbedFromURL(nextURL, message.id));
+			return message.channel.send(
+				await getEmbedFromURL(nextURL, startTimestamp)
+			);
 		case '3char':
 			const threeCharURL =
 				'https://namemc.com/minecraft-names?sort=asc&length_op=eq&length=3&lang=&searches=0';
 			return message.channel.send(
-				await getEmbedFromURL(threeCharURL, message.id)
+				await getEmbedFromURL(threeCharURL, startTimestamp)
 			);
 		default:
 			return message.channel.send(
