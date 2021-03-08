@@ -71,7 +71,7 @@ client.on('message', async (message) => {
 	const command = message.content.split(' ')[0].substring(config.prefix.length);
 	const args = message.content.split(' ').splice(1);
 	const startTimestamp = Date.now();
-	switch (command) {
+	switch (command.toLowerCase()) {
 		case 'help':
 			return message.channel.send(
 				new Discord.MessageEmbed()
